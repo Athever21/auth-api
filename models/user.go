@@ -54,7 +54,8 @@ func GetAllUser(page int) ([]User, error) {
 func CreateUser(user User) (*mongo.InsertOneResult, error) {
 	collection := getCollection()
 
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 	insertResult, err := collection.InsertOne(ctx, user)
 
 	if err != nil {
@@ -69,7 +70,8 @@ func FindByUsername(username string) (*User, error) {
 	collection := getCollection()
 	u := new(User)
 
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 	res := collection.FindOne(ctx, bson.M{"username": username})
 
 	err := res.Decode(&u)
@@ -97,7 +99,8 @@ func FindUserById(id string) *User {
 	collection := getCollection()
 	u := new(User)
 
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 	res := collection.FindOne(ctx, bson.M{"_id": id}, options.FindOne().SetProjection(bson.M{"password": 0}))
 	res.Decode(&u)
 
@@ -128,7 +131,8 @@ func UpdateUser(user *User, body map[string]string) (*User, error) {
 
 	filter := bson.M{"_id": user.ID}
 
-	ctx, _ := context.WithTimeout(context.Background(), time.Second*2)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
 	_, err := collection.UpdateOne(ctx, filter, bson.M{"$set": user})
 
 	if err != nil {
@@ -143,7 +147,8 @@ func DeleteUser(user *User) error {
 
 	filter := bson.M{"_id": user.ID}
 
-	ctx, _ := context.WithTimeout(context.Background(), time.Second*2)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
 	_, err := collection.DeleteOne(ctx, filter)
 
 	if err != nil {

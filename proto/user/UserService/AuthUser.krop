@@ -1,0 +1,13 @@
+{
+  "details": {
+    "endpoint": "http://localhost:9000",
+    "methodFqn": "user.UserService.AuthUser"
+  },
+  "requests": [
+    {
+      "location": "AuthUser-request.json"
+    }
+  ],
+  "operationType": "unary",
+  "invokerName": "grpc"
+}

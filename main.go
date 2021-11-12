@@ -2,6 +2,7 @@ package main
 
 import (
 	"auth-api/db"
+	"auth-api/grpcServer"
 	"auth-api/routes"
 	"fmt"
 	"log"
@@ -19,5 +20,7 @@ func main() {
 	routes.UserRouter(app)
 
 	defer db.CloseDb()
+
+	go grpcServer.StartServer()
 	log.Fatal(app.Start(fmt.Sprintf(":%s", os.Getenv("PORT"))))
 }

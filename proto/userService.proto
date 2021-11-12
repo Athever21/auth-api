@@ -1,0 +1,15 @@
+syntax = "proto3";
+package user;
+option go_package = "./;proto";
+
+message Token {
+  string token = 1;
+}
+
+message Valid {
+  int32 bool = 1;
+}
+
+service UserService {
+  rpc AuthUser(Token) returns (Valid) {}
+}
