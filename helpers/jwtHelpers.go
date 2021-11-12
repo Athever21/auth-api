@@ -28,12 +28,13 @@ func createToken(id string, refresh bool) *jwt.Token {
 	claims := customClaims{
 		UserId: id,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: int64(time.Minute * 5),
+			ExpiresAt: int64(time.Now().UTC().Unix() + 60*5),
+			IssuedAt:  time.Now().UTC().Unix(),
 		},
 	}
 
 	if refresh {
-		claims.ExpiresAt = int64(time.Hour * 24 * 7)
+		claims.StandardClaims.ExpiresAt = int64(time.Now().UTC().Unix() + 60*60*24*7)
 	}
 
 	return jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
@@ -56,7 +57,6 @@ func GetIdFromToken(tokenString string, refresh bool) (string, error) {
 	}
 
 	claims := token.Claims.(*customClaims)
-
 	return getIdFromClaims(claims.UserId), nil
 }
 
