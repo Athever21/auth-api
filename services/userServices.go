@@ -105,12 +105,47 @@ func UsersMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return e.JSON(404, &echo.Map{"error": "User Not Found"})
 		}
 
+		if u.ID != user.ID {
+			return e.JSON(403, &echo.Map{"error": "Forbidden"})
+		}
+
 		e.Set("authUser", u)
-		fmt.Println(u)
+
 		return next(e)
 	}
 }
 
 func GetUser(e echo.Context) error {
 	return e.JSON(200, e.Get("userFromId"))
+}
+
+func ChangeUser(e echo.Context) error {
+	userAuth := e.Get("authUser").(*models.User)
+
+	var body map[string]string
+
+	err := json.NewDecoder(e.Request().Body).Decode(&body)
+	if err != nil {
+		return e.JSON(400, &echo.Map{"error": "Invalid body request"})
+	}
+
+	user, err := models.UpdateUser(userAuth, body)
+
+	if err != nil {
+		return e.JSON(400, &echo.Map{"error": err.Error()})
+	}
+
+	user.Password = nil
+	return e.JSON(200, user)
+}
+
+func DeleteUser(e echo.Context) error {
+	userAuth := e.Get("authUser").(*models.User)
+	err := models.DeleteUser(userAuth)
+
+	if err != nil {
+		return e.JSON(400, &echo.Map{"error": "Internal server error"})
+	}
+
+	return e.JSON(400, &echo.Map{"success": "true"})
 }

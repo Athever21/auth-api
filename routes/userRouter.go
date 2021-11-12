@@ -17,4 +17,6 @@ func UserRouter(app *echo.Echo) {
 	usersId := app.Group("/users/:id")
 	usersId.Use(services.UsersMiddleware)
 	usersId.GET("", services.GetUser)
+	usersId.PUT("", services.ChangeUser)
+	usersId.DELETE("", services.DeleteUser)
 }

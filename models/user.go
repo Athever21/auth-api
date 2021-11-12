@@ -3,9 +3,11 @@ package models
 import (
 	"auth-api/db"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/matthewhartstonge/argon2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -100,4 +102,53 @@ func FindUserById(id string) *User {
 	res.Decode(&u)
 
 	return u
+}
+
+func UpdateUser(user *User, body map[string]string) (*User, error) {
+	collection := getCollection()
+
+	if body["username"] != "" {
+		u, _ := FindByUsername(body["username"])
+		if u != nil {
+			return nil, errors.New("username already in use")
+		}
+		user.Username = body["username"]
+	}
+	if body["password"] != "" {
+		argon := argon2.DefaultConfig()
+		hash, err := argon.HashEncoded([]byte(body["password"]))
+		if err != nil {
+			return nil, errors.New("internal server error")
+		}
+		user.Password = hash
+	}
+	if body["img"] != "" {
+		user.Image = body["img"]
+	}
+
+	filter := bson.M{"_id": user.ID}
+
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*2)
+	_, err := collection.UpdateOne(ctx, filter, bson.M{"$set": user})
+
+	if err != nil {
+		return nil, errors.New("internal server error")
+	}
+
+	return user, nil
+}
+
+func DeleteUser(user *User) error {
+	collection := getCollection()
+
+	filter := bson.M{"_id": user.ID}
+
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*2)
+	_, err := collection.DeleteOne(ctx, filter)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

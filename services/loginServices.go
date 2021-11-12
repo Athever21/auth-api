@@ -44,6 +44,7 @@ func LoginUser(e echo.Context) error {
 	if err != nil {
 		return e.JSON(500, &echo.Map{"error": "Internal server error"})
 	}
+
 	user.Password = nil
 	return e.JSON(200, &echo.Map{"token": helpers.CreateLoginToken(user.ID.String()), "user": user})
 }
