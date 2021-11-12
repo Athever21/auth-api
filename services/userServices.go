@@ -1,10 +1,12 @@
 package services
 
 import (
+	"auth-api/helpers"
 	"auth-api/models"
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -87,6 +89,24 @@ func UsersMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return e.JSON(401, &echo.Map{"error": "Unauthorized"})
 		}
 
+		if valid := strings.HasPrefix(auth[0], "Bearer "); !valid {
+			return e.JSON(401, &echo.Map{"error": "Unauthorized"})
+		}
+
+		userId, err := helpers.GetIdFromToken(auth[0][7:], false)
+
+		if err != nil {
+			return e.JSON(401, &echo.Map{"error": "Invalid token"})
+		}
+
+		u := models.FindUserByIdString(userId)
+
+		if u.Username == "" {
+			return e.JSON(404, &echo.Map{"error": "User Not Found"})
+		}
+
+		e.Set("authUser", u)
+		fmt.Println(u)
 		return next(e)
 	}
 }

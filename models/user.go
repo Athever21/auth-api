@@ -94,7 +94,7 @@ func FindUserByIdString(id string) *User {
 func FindUserById(id string) *User {
 	collection := getCollection()
 	u := new(User)
-	fmt.Println(id)
+
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	res := collection.FindOne(ctx, bson.M{"_id": id}, options.FindOne().SetProjection(bson.M{"password": 0}))
 	res.Decode(&u)
